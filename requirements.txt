@@ -1,0 +1,4 @@
+EasyProcess==0.2.2
+Pillow==3.3.1
+pyscreenshot==0.4.2
+selenium==2.53.6
