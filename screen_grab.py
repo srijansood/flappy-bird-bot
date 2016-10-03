@@ -1,8 +1,9 @@
-import pyscreenshot as ScreenGrab
+from ipdb import set_trace as pdb
 import os
 import time
 from PIL import Image
-from pdb import set_trace as pdb
+from io import BytesIO
+from binascii import unhexlify
 
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -10,7 +11,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
 """
-Requirements (apart from reuirements.txt) -
+Requirements (apart from requirements.txt) -
 chromedriver (add to PATH)- http://chromedriver.storage.googleapis.com/index.html?path=2.24/
 """
 
@@ -22,43 +23,46 @@ x_margin = 44
 y_margin = 218
 bounds = (x_margin + 1, y_margin + 1, x_margin + 481, y_margin + 641)
 
-def screenGrab():
-    im = ScreenGrab.grab(bounds)
-    im_path = os.path.join(os.getcwd(), str(int(time.time())) +
-    '.png')
-    im.save(im_path, 'PNG')
 
-    return im
+def screenshot(browser, element, save=False):
+    elem_location = element.location
+    elem_size = element.size
 
-def selenium_grab(browser):
-    im_path = os.path.join(os.getcwd(), "images", str(int(time.time())) +
-    '.png')
-    browser.get_screenshot_as_file(im_path)
-    return Image.open(im_path)
+    img = Image.open(BytesIO(browser.get_screenshot_as_png()))
+    pdb()
+    left = elem_location['x']
+    top = elem_location['y']
+    right = elem_location['x'] + elem_size['width']
+    bottom = elem_location['y'] + elem_size['height']
+    box = (left, top, right, bottom)
+    # (29.0, 123.0, 509.0, 763.0)
+    # Does not work, need to double
 
-def web_driver():
-    browser = webdriver.Chrome()
+    img = img.crop((58, 246, 1018, 1526))
+
+    if save:
+        im_path = os.path.join(os.getcwd(), "images", str(int(time.time())) + '.png')
+        img.save(im_path, 'PNG')
+    return screenshot
+
+
+def get_game(game_url):
+
+    options = webdriver.ChromeOptions()
+    options.add_extension(os.path.join(os.getcwd(), "adblock.crx"))
+    browser = webdriver.Chrome(chrome_options=options)
     browser.get(game_url)
-    screenshot = selenium_grab(browser)
-
-    # game = browser.find_element_by_id("testCanvas")
-    #
 
     game = WebDriverWait(browser, 15).until(
         EC.presence_of_element_located((By.ID, "testCanvas"))
     )
-    print("Found game")
-    input("Continue")
-    for i in xrange(100):
-        print("Space")
-        game.click()
 
-    pdb()
-
+    return browser, game
 
 
 def main():
-    web_driver()
+    browser, game = get_game("http://flappybird.io/")
+    screenshot(browser, game)
 
 if __name__ == '__main__':
     main()
