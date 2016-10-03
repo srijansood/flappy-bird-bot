@@ -1,9 +1,7 @@
-from ipdb import set_trace as pdb
 import os
 import time
 from PIL import Image
 from io import BytesIO
-from binascii import unhexlify
 
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -29,7 +27,6 @@ def screenshot(browser, element, save=False):
     elem_size = element.size
 
     img = Image.open(BytesIO(browser.get_screenshot_as_png()))
-    pdb()
     left = elem_location['x']
     top = elem_location['y']
     right = elem_location['x'] + elem_size['width']
@@ -43,7 +40,7 @@ def screenshot(browser, element, save=False):
     if save:
         im_path = os.path.join(os.getcwd(), "images", str(int(time.time())) + '.png')
         img.save(im_path, 'PNG')
-    return screenshot
+    return img
 
 
 def get_game(game_url):
@@ -58,11 +55,3 @@ def get_game(game_url):
     )
 
     return browser, game
-
-
-def main():
-    browser, game = get_game("http://flappybird.io/")
-    screenshot(browser, game)
-
-if __name__ == '__main__':
-    main()
