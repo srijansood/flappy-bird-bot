@@ -4,6 +4,9 @@ from PIL import Image
 from io import BytesIO
 
 from selenium import webdriver
+from selenium.webdriver.common.desired_capabilities import DesiredCapabilities
+from selenium.webdriver.firefox.options import Options
+from selenium.webdriver.firefox.firefox_binary import FirefoxBinary
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -16,10 +19,6 @@ chromedriver (add to PATH)- http://chromedriver.storage.googleapis.com/index.htm
 # --- Globals ---
 game_url = "http://flappybird.io/"
 
-# Retina MBP13, FB on left in Chrome
-x_margin = 44
-y_margin = 218
-bounds = (x_margin + 1, y_margin + 1, x_margin + 481, y_margin + 641)
 
 
 def screenshot(browser, element, save=False):
@@ -45,9 +44,16 @@ def screenshot(browser, element, save=False):
 
 def get_game(game_url):
 
-    options = webdriver.ChromeOptions()
-    options.add_extension(os.path.join(os.getcwd(), "adblock.crx"))
-    browser = webdriver.Chrome(chrome_options=options)
+    # options = webdriver.Firefox()
+    # optio
+    # options.add_extension(os.path.join(os.getcwd(), "adblock.crx"))
+    # browser = webdriver.Chrome(chrome_options=options)
+    # options = Options()
+    firefox_binary = FirefoxBinary("/Applications/Firefox.app/Contents/MacOS/firefox-bin")
+    # caps = DesiredCapabilities.FIREFOX
+    # caps["binary"] = "/Applications/FirefoxDeveloperEdition.app/Contents/MacOS/firefox"
+    # caps["marionette"] = True
+    browser = webdriver.Firefox(firefox_binary=firefox_binary)
     browser.get(game_url)
 
     game = WebDriverWait(browser, 15).until(
