@@ -44,7 +44,7 @@ def screenshot(browser, element, save=False):
     return img
 
 
-def get_game(game_url):
+def get_game(game_url="http://flappybird.io/"):
 
     options = webdriver.ChromeOptions()
     options.add_extension(os.path.join(os.getcwd(), "adblock.crx"))
