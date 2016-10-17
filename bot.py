@@ -1,4 +1,4 @@
-from browser import get_game, screenshot
+from browser import get_game, screenshot, ActionChains
 from random import randint
 from time import sleep
 
@@ -11,11 +11,10 @@ actions = [" ", None]  # List of permissible actions
 def main(browser, game):
     for i in xrange(100):
         # screen = screenshot(browser, game)
-
         action = actions[randint(0, 1)]
         if action:
-            # game.send_keys(action)
-            game.click()
+            ActionChains(browser).click().perform()
+            # game.click()
             print("click")
         else:
             sleep(0.3)
