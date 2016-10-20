@@ -23,7 +23,7 @@ y_margin = 218
 bounds = (x_margin + 1, y_margin + 1, x_margin + 481, y_margin + 641)
 
 
-def screenshot(browser, element, save=False):
+def screenshot(browser, element, grayscale=True, save=False):
     elem_location = element.location
     elem_size = element.size
 
@@ -37,11 +37,19 @@ def screenshot(browser, element, save=False):
     # Does not work, need to double
 
     img = img.crop((58, 246, 1018, 1526))
+    score = img.crop((442, 188, 510, 287))
+
+    if grayscale:
+        # img = img.convert('L')
+        score = score.convert('L')
 
     if save:
         im_path = os.path.join(os.getcwd(), "images", str(int(time.time())) + '.png')
+        score_path = os.path.join(os.getcwd(), "images", str(int(time.time())) + '-score.png')
         img.save(im_path, 'PNG')
-    return img
+        score.save(score_path, 'PNG')
+
+    return img, score
 
 
 def get_game(game_url="http://flappybird.io/"):
