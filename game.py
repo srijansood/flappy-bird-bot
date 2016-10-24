@@ -1,7 +1,10 @@
-import numpy as np
-from browser import get_game, screenshot, ActionChains
+import cv2
 
+import numpy as np
+import os
+import rewardFunction as rf
 from PIL import Image
+from browser import get_game, screenshot, ActionChains
 
 """
 Defining wrapper game for online version
@@ -9,6 +12,7 @@ Defining wrapper game for online version
 
 LAMBDA = .3
 SCORE_THRESHOLD = 0.5
+GOAL_TEMPLATES = os.path.join(os.getcwd(), "goal_images/aligned")
 
 class GameState:
     """
@@ -18,6 +22,7 @@ class GameState:
     def __init__(self):
         self.steps = 0
         self.browser, self.game = get_game()
+        import ipdb; ipdb.set_trace()
         self.state, self.score = self.screenshot()
 
 
@@ -44,13 +49,60 @@ class GameState:
 
         terminal = False
 
-        # Check if Score Area changed considerably for Reward
-        # Alternatives - Template Matching for bird between pipes or for death screen
-        manhattan_diff = sum(sum(abs(score - self.score)))
-        print(manhattan_diff)
-        self.score = score
+        # Template Matching for Task Representation
+        """
+        res = cv2.matchTemplate(bmp,goal,cv2.TM_CCORR_NORMED)
+        min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
 
-        reward = 0
+        top_left = max_loc
+        stateROI = bmp[top_left[1]:top_left[1] + w, top_left[0]:top_left[0] + h].copy()
+
+        goalWidth, goalHeight = stateROI.shape[:2]
+        goalROI = goal[0:goalWidth, 0:goalHeight].copy()
+
+        stateROI = cv2.cvtColor(stateROI, cv2.COLOR_BGR2GRAY)
+        goalROI = cv2.cvtColor(goalROI, cv2.COLOR_BGR2GRAY)
+
+        reward = 1 / (np.exp((rf.calculateDistance(stateROI, goalROI))))
+        """
+        # for f in os.listdir(GOAL_TEMPLATES):
+        for f in ['03.jpg']:
+            # game_state_img = cv2.imread("/Users/Srijan/Dev/Research/flappy-bird-bot/images/between.png")
+            output = game_state_img.copy()
+            game_state_img = cv2.cvtColor(game_state_img, cv2.COLOR_BGR2GRAY)
+            goal_img = cv2.imread(os.path.join(GOAL_TEMPLATES, f))
+            goal_img = cv2.cvtColor(goal_img, cv2.COLOR_BGR2GRAY)
+
+            res = cv2.matchTemplate(image=game_state_img, templ=goal_img, method=cv2.TM_CCOEFF_NORMED)
+            min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
+            top_left = max_loc
+            h, w = goal_img.shape
+            best_match = game_state_img[top_left[1]:top_left[1] + h, top_left[0]:top_left[0] + w].copy()
+            dist1 = rf.calculateDistance(best_match, goal_img)
+            dist2 = sum(sum(abs(goal_img - best_match)))
+            rew1 = float(1) / float(np.exp(dist1))
+            rew2 = float(1) / float(np.exp(dist2))
+
+            print("Hog: {} <> Reward: {}   |   SSD: {} <> Reward: {}".format(dist1, rew1, dist2, rew2))
+            # cv2.rectangle(output, top_left, (top_left[0] + w, top_left[1] + h), color)
+
+            # Image.fromarray(output).show()
+
+
+
+            # stateROI = game_state_img[top_left[1]:top_left[1] + w, top_left[0]:top_left[0] + h].copy()
+            #
+            # goalWidth, goalHeight = stateROI.shape[:2]
+            # goalROI = goal_img[0:goalWidth, 0:goalHeight].copy()
+            #
+            # stateROI = cv2.cvtColor(stateROI, cv2.COLOR_BGR2GRAY)
+            # goalROI = cv2.cvtColor(goalROI, cv2.COLOR_BGR2GRAY)
+
+
+
+            # reward = 1 / (np.exp((rf.calculateDistance(stateROI, goalROI))))
+
+        reward = rew1
 
         return game_state.astype(np.uint8), reward, terminal, self.score
 
