@@ -1,5 +1,6 @@
 import os
 import time
+import params
 from PIL import Image
 from io import BytesIO
 
@@ -8,19 +9,6 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.support import expected_conditions as EC
-
-"""
-Requirements (apart from requirements.txt) -
-chromedriver (add to PATH)- http://chromedriver.storage.googleapis.com/index.html?path=2.24/
-"""
-
-# --- Globals ---
-game_url = "http://flappybird.io/"
-
-# Retina MBP13, FB on left in Chrome
-x_margin = 44
-y_margin = 218
-bounds = (x_margin + 1, y_margin + 1, x_margin + 481, y_margin + 641)
 
 
 def screenshot(browser, element, grayscale=True, save=False):
@@ -37,30 +25,26 @@ def screenshot(browser, element, grayscale=True, save=False):
     # Does not work, need to double
 
     img = img.crop((58, 246, 1018, 1526))
-    score = img.crop((442, 188, 510, 287))
 
     if grayscale:
-        # img = img.convert('L')
-        score = score.convert('L')
+        img = img.convert('L')
 
     if save:
         im_path = os.path.join(os.getcwd(), "images", str(int(time.time())) + '.png')
-        score_path = os.path.join(os.getcwd(), "images", str(int(time.time())) + '-score.png')
         img.save(im_path, 'PNG')
-        score.save(score_path, 'PNG')
 
-    return img, score
+    return img
 
 
-def get_game(game_url="http://flappybird.io/"):
+def get_game(game_url=params.game_url):
 
     options = webdriver.ChromeOptions()
-    options.add_extension(os.path.join(os.getcwd(), "adblock.crx"))
-    browser = webdriver.Chrome(chrome_options=options)
+    options.add_extension(os.path.join(os.getcwd(), params.adblock_path))
+    browser = webdriver.Chrome(params.chromedriver, chrome_options=options)
     browser.get(game_url)
 
     game = WebDriverWait(browser, 15).until(
-        EC.presence_of_element_located((By.ID, "testCanvas"))
+        EC.presence_of_element_located((By.ID, params.elem_id))
     )
 
     actions = ActionChains(browser)
