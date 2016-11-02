@@ -1,0 +1,3 @@
+[submodule "DeepLearningFlappyBird"]
+	path = DeepLearningFlappyBird
+	url = https://github.com/srijansood/DeepLearningFlappyBird
