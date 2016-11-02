@@ -24,7 +24,8 @@ class GameState:
     def __init__(self):
         self.steps = 0
         self.browser, self.game = get_game()
-        self.states = deque(4*[self.screenshot()[0]], maxlen=4)    # stacked frames
+        self.state = self.screenshot()
+        self.states = deque(4*[self.screenshot()], maxlen=4)    # stacked frames
         self.goal = np.array(Image.open(params.goal).convert('L'))
 
     def frame_step(self, input_actions):
@@ -41,14 +42,14 @@ class GameState:
         if input_actions[1] == 1:   # Also serves as game restart
             ActionChains(self.browser).click().perform()
 
-        game_state_img, game_state_img_grayscale = self.screenshot()
+        self.state, game_state_img_grayscale = self.screenshot()
         self.states.popleft()   # remove oldest frame
-        self.states.append(game_state_img)
+        self.states.append(self.state)
 
         reward = get_reward(game_state_img_grayscale, goal_img=self.goal)
         terminal = self.steps == params.max_steps
 
-        return np.asarray(self.states, dtype=np.uint8), reward, terminal
+        return np.asarray(self.state, dtype=np.uint8), reward, terminal
 
     def screenshot(self):
         """
@@ -72,9 +73,8 @@ def get_reward(state_img, goal_img):
         1. "Positive" Goal, use template matching on the state_img, return inverse of distance to goal_img
         2. "Negative" Goal, detect if state_img matches the death screen, return negative reward if so
     """
-    threshold = 3.0
+    threshold = 8.0
     dist = mean_squared_error(state_img, goal_img)
-    print dist
     if dist < threshold:
         # death
         return -1
